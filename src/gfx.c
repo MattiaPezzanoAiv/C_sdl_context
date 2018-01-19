@@ -46,7 +46,7 @@ void ctx_put_pixel(ctx_t* ctx,int x, int y, uint8_t r, uint8_t g, uint8_t b,uint
 
 void ctx_clear(ctx_t* ctx)
 {
-    SDL_SetRenderDrawColor(ctx->renderer,0,0,0,1);    
+    SDL_SetRenderDrawColor(ctx->renderer,COLOR_BLACK);    
     SDL_RenderClear(ctx->renderer);
 }
 void ctx_clear_color(ctx_t* ctx,uint8_t r, uint8_t g, uint8_t b,uint8_t a)
@@ -57,5 +57,43 @@ void ctx_clear_color(ctx_t* ctx,uint8_t r, uint8_t g, uint8_t b,uint8_t a)
 
 void ctx_tick(ctx_t* ctx)
 {
+    float now, last, delta_time;
+    last = SDL_GetPerformanceCounter();
+
     SDL_RenderPresent(ctx->renderer);
+
+    now = SDL_GetPerformanceCounter();
+    ctx->delta_time = (now - last) / (double)SDL_GetPerformanceFrequency();
 }
+
+
+rect_obj_t* new_rect_object(int w, int h,uint8_t r,uint8_t g, uint8_t b,uint8_t a)
+{
+    rect_obj_t* obj = malloc(sizeof(rect_obj_t));
+    if(!obj)
+    {
+        fprintf(stderr,"Unable to instance rect object");
+        return NULL;
+    }
+    obj = memset(obj,0,sizeof(rect_obj_t));
+    obj->r = r;
+    obj->g = g;
+    obj->b = b;
+    obj->a = a;
+
+    obj->rect = malloc(sizeof(SDL_Rect));
+    obj->rect = memset(obj->rect,0,sizeof(SDL_Rect));
+    obj->rect->w = w;
+    obj->rect->h = h;
+    return obj;
+}
+
+void ctx_draw_rect_object(ctx_t* ctx,rect_obj_t* actor)
+{
+    SDL_SetRenderDrawColor(ctx->renderer,actor->r,actor->g,actor->b, actor->a);
+    if(!actor->fill)
+        SDL_RenderDrawRect(ctx->renderer,actor->rect);
+    else
+        SDL_RenderFillRect(ctx->renderer,actor->rect);
+}
+
